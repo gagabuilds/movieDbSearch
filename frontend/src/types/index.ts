@@ -4,6 +4,11 @@ export interface Movie {
     description: string;
     rating: number;
     imageUrl?: string;
+    backdropUrl?: string;
+    releaseYear?: number;
+    genres?: string[] | string;
+    voteAverage?: number;
+    voteCount?: number;
 }
 
 export interface SearchState {
