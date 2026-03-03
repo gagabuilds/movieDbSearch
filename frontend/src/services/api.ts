@@ -53,7 +53,7 @@ export async function searchMovies(query: string, limit: number = 10): Promise<S
                 title: m.title,
                 description: plot,
                 // Convert match score to a 10-point scale decimal rating
-                rating: matchScore ? parseFloat((matchScore * 10).toFixed(1)) : 8.0,
+                rating : (matchScore !== null && matchScore !== undefined) ? parseFloat((Number(matchScore) * 10).toFixed(1)) : 8.0,
                 imageUrl,
                 backdropUrl,
                 releaseYear: m.release_year,

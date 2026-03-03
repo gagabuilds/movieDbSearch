@@ -3,9 +3,9 @@ import { cn } from "../lib/utils";
 
 /**
  * StatusIndicator Component
- * - Heartbeat monitor for the CineMatch AI backend.
+ * - Connectivity badge for the CineMatch AI backend.
  * - Key Features:
- * - Real-time Health Check: Performs a 'fetch' to /api/health on mount to verify connectivity.
+ * - One-time Connectivity Check: Verifies backend availability on initial mount.
  * - Dynamic Visual States: 
  * - Online: Green dot with a pulsing 'animate-ping' radar effect.
  * - Local/Offline: Solid yellow dot indicating a fallback or disconnected state.

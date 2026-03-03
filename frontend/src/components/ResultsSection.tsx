@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from 'react'; // Removed useEffect
 import { motion } from 'framer-motion';
 import { Star, Calendar } from 'lucide-react';
 import { type SearchState, type Movie } from '../types';
@@ -15,25 +15,14 @@ interface ResultsSectionProps {
 /**
  * ResultsSection Component
  * - Displays a paginated list of AI-recommended movie results.
- * - Key Logic:
- * - 'useEffect': Automatically resets 'currentPage' to 1 whenever a new search is performed.
- * - Paginated Rendering: Slices the global result set based on 'PAGE_SIZE'.
- * - Background Bleed: Uses a low-opacity backdrop image ('opacity-20') with a 
- * left-to-right gradient to create an immersive card background.
- * - Responsive Handling: Swaps between small/large thumbnails and toggles genre 
- * visibility based on screen size.
+ * - RESET LOGIC: This component should be used with a 'key' prop (e.g., the search query) 
+ * in the parent component. When the key changes, React naturally resets 'currentPage' to 1.
  */
 export const ResultsSection = ({ searchState, onSelectMovie, className }: ResultsSectionProps) => {
     const [currentPage, setCurrentPage] = useState(1);
-    const [prevResults, setPrevResults] = useState(searchState.results);
     const PAGE_SIZE = 5;
 
-    // Reset pagination when results change during render (React recommended way to avoid effect cascades)
-    if (searchState.results !== prevResults) {
-        setPrevResults(searchState.results);
-        setCurrentPage(1);
-    }
-
+    // Calculate pagination values
     const totalPages = Math.ceil(searchState.results.length / PAGE_SIZE);
     const safePage = Math.max(1, Math.min(currentPage, totalPages));
     const paginatedResults = searchState.results.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
@@ -45,7 +34,6 @@ export const ResultsSection = ({ searchState, onSelectMovie, className }: Result
             exit={{ opacity: 0 }}
             className={cn("w-full mt-8", className)}
         >
-            {/* Header & Pagination Controls */}
             <div className="flex flex-col md:flex-row items-center justify-between mb-4 gap-2">
                 <h2 className="text-xl font-semibold flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-purple-400" />
@@ -76,7 +64,6 @@ export const ResultsSection = ({ searchState, onSelectMovie, className }: Result
                 )}
             </div>
 
-            {/* Loading / Error / Results States */}
             {searchState.isSearching ? (
                 <div className="flex flex-col gap-3">
                     {[1, 2, 3].map((n) => (
@@ -108,7 +95,6 @@ export const ResultsSection = ({ searchState, onSelectMovie, className }: Result
                                         "hover:border-purple-500/50 hover:shadow-purple-500/20 transition-all duration-300"
                                     )}
                                 >
-                                    {/* Immersive Background Layer */}
                                     <div className="absolute inset-0 z-0 pointer-events-none">
                                         {bgImage && (
                                             <img
@@ -120,34 +106,25 @@ export const ResultsSection = ({ searchState, onSelectMovie, className }: Result
                                         <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent" />
                                     </div>
 
-                                    {/* Content Layer */}
                                     <div className="relative z-10 flex items-center gap-3 sm:gap-4 p-3 sm:p-4 w-full">
-                                        {/* Thumbnail with Hover Zoom */}
                                         <div className="w-16 h-24 sm:w-24 sm:h-36 flex-shrink-0 rounded-xl overflow-hidden shadow-2xl border border-white/10">
                                             {movie.imageUrl ? (
-                                                <img
-                                                    src={movie.imageUrl}
-                                                    alt={movie.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                />
+                                                <img src={movie.imageUrl} alt={movie.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                             ) : (
                                                 <div className="w-full h-full bg-white/5" />
                                             )}
                                         </div>
 
                                         <div className="flex-1 text-left py-1">
-                                            <h3 className="text-lg sm:text-xl font-bold text-white group-hover:text-purple-400 transition-colors drop-shadow-lg">
+                                            <h3 className="text-lg sm:text-xl font-bold text-white group-hover:text-purple-400 transition-colors">
                                                 {movie.title}
                                             </h3>
-
-                                            {/* Badges Row */}
                                             <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 mb-2">
                                                 <MovieBadge icon={Star} text={`${movie.rating} Match`} variant="yellow" iconClassName="fill-current w-3.5 h-3.5" />
-                                                {movie.voteAverage && <MovieBadge icon={Star} text={movie.voteAverage.toFixed(1)} variant="white" />}
+                                                {typeof movie.voteAverage === 'number' && <MovieBadge icon={Star} text={movie.voteAverage.toFixed(1)} variant="white" />}
                                                 {movie.releaseYear && <MovieBadge icon={Calendar} text={movie.releaseYear} variant="blue" />}
                                             </div>
-
-                                            <p className="text-[13px] sm:text-sm text-gray-300 line-clamp-2 leading-relaxed max-w-3xl drop-shadow-md">
+                                            <p className="text-[13px] sm:text-sm text-gray-300 line-clamp-2 leading-relaxed max-w-3xl">
                                                 {movie.description}
                                             </p>
                                         </div>

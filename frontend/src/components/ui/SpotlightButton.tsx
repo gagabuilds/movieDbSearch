@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from "react";
+import { useState, type MouseEvent, type ReactNode } from "react";
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 import { cn } from "../../lib/utils";
 
@@ -16,7 +16,7 @@ export function SpotlightButton({
     onClick,
     className
 }: {
-    children: React.ReactNode;
+    children: ReactNode;
     onClick?: () => void;
     className?: string
 }) {
@@ -39,7 +39,7 @@ export function SpotlightButton({
                 background: useMotionTemplate`
                     radial-gradient(
                         ${visible ? radius + "px" : "0px"} circle at ${mouseX}px ${mouseY}px,
-                        var(--purple-500),
+                        var(--color-purple-500),
                         transparent 80%
                     )
                 `,

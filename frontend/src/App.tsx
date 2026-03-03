@@ -45,6 +45,10 @@ function App() {
    * Error Handling: The try...catch block ensures that if the internet dies or the API fails, the app doesn't crash; it just shows a "Failed to fetch" message.
    */
   const handleSearch = async (query: string, limit: number) => {
+
+    // Guard: If we are already searching, ignore new requests
+    if (searchState.isSearching) return;
+
     setSearchState((prev: SearchState) => ({ ...prev, isSearching: true, query, error: undefined }));
     setHasSearched(true);
 
@@ -77,6 +81,7 @@ function App() {
           <AnimatePresence>
             {hasSearched && (
               <ResultsSection
+                key={searchState.query || 'initial'}
                 searchState={searchState}
                 onSelectMovie={setSelectedMovie}
               />

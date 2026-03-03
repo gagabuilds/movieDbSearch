@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { cn } from "../../lib/utils";
 
 /**
@@ -13,7 +13,7 @@ export function SpotlightCard({
     children,
     className
 }: {
-    children: React.ReactNode;
+    children: ReactNode;
     className?: string
 }) {
     const divRef = useRef<HTMLDivElement>(null);
