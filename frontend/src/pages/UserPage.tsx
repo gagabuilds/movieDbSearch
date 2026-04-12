@@ -37,7 +37,7 @@ export function UserPage() {
     <ProfileDashboard
       user={user}
       reviews={reviews}
-      friendsCount={friendsCount ?? 0}
+      friendsCount={friendsCount}
       isPrivate={false}
       canManageReviews={false}
     />

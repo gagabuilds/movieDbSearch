@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useReviews, usePostReview, useDeleteReview, useEditReview } from '@/hooks/useReviews'
 import { useAuthStore } from '@/store/authStore'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,6 @@ import { Pencil, Trash2, Star } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { Link } from 'react-router-dom'
 import { EmotionBadge } from '@/components/ui/EmotionBadge'
-import type { Review } from '@/types'
 
 /**
  * StarRating Props
@@ -39,9 +38,9 @@ function StarRating({ value, onChange }: StarRatingProps) {
         >
           <Star
             className={`size-5 transition-colors ${star <= active
-              ? 'fill-brand text-brand'
-              : 'fill-muted text-muted-foreground'
-            }`}
+                ? 'fill-brand text-brand'
+                : 'fill-muted text-muted-foreground'
+              }`}
           />
         </button>
       ))}
@@ -54,70 +53,6 @@ function StarRating({ value, onChange }: StarRatingProps) {
   )
 }
 
-function ReviewComposeInner({
-  movieId,
-  myReview,
-  isEditMode,
-  onCancelEdit,
-}: {
-  movieId: string
-  myReview?: Review
-  isEditMode: boolean
-  onCancelEdit: () => void
-}) {
-  const { mutate: post, isPending: isPosting } = usePostReview(movieId)
-  const { mutate: edit, isPending: isEditing } = useEditReview(movieId)
-
-  const [rating, setRating] = useState(() => myReview?.rating ?? 0)
-  const [comment, setComment] = useState(() => myReview?.comment ?? '')
-
-  const handleSubmit = () => {
-    if (!rating || !comment.trim()) return
-    if (isEditMode && myReview) {
-      edit({ rating, comment }, { onSuccess: onCancelEdit })
-    } else {
-      post({ rating, comment })
-    }
-  }
-
-  return (
-    <div className="mb-8 p-5 rounded-xl border border-border bg-card space-y-4">
-      <p className="text-sm font-semibold">
-        {isEditMode ? 'Edit your review' : 'Write a review'}
-      </p>
-      <StarRating value={rating} onChange={setRating} />
-      <Textarea
-        placeholder="What did you think of this movie?"
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        rows={3}
-        className="resize-none bg-background"
-      />
-      <div className="flex gap-2">
-        <Button
-          size="sm"
-          onClick={handleSubmit}
-          disabled={!rating || !comment.trim() || isPosting || isEditing}
-          className="bg-brand hover:bg-brand/90 text-white"
-        >
-          {!rating
-            ? 'Select a rating first'
-            : isPosting || isEditing
-              ? 'Saving...'
-              : isEditMode
-                ? 'Save changes'
-                : 'Submit review'}
-        </Button>
-        {isEditMode && (
-          <Button size="sm" variant="ghost" onClick={onCancelEdit}>
-            Cancel
-          </Button>
-        )}
-      </div>
-    </div>
-  )
-}
-
 /**
  * ReviewSection Component
  * Displays and manages user reviews for a specific movie, including creating,
@@ -126,11 +61,33 @@ function ReviewComposeInner({
 export function ReviewSection({ movieId }: { movieId: string }) {
   const user = useAuthStore((s) => s.user)
   const { data: reviews = [], isLoading, isError } = useReviews(movieId)
+  const { mutate: post, isPending: isPosting } = usePostReview(movieId)
   const { mutate: remove } = useDeleteReview(movieId)
+  const { mutate: edit, isPending: isEditing } = useEditReview(movieId)
 
   const myReview = reviews.find((r) => r.userId === user?.id)
 
+  const [rating, setRating] = useState(0)
+  const [comment, setComment] = useState('')
   const [isEditMode, setIsEditMode] = useState(false)
+
+  useEffect(() => {
+    if (myReview) {
+      setRating(myReview.rating)
+      setComment(myReview.comment ?? '')
+    }
+  }, [myReview])
+
+  const handleSubmit = () => {
+    if (!rating || !comment.trim()) return
+    if (isEditMode) {
+      edit({ rating, comment }, { onSuccess: () => setIsEditMode(false) })
+    } else {
+      post({ rating, comment }, {
+        onSuccess: () => { setRating(0); setComment('') }
+      })
+    }
+  }
 
   const averageRating = reviews.length
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
@@ -164,14 +121,42 @@ export function ReviewSection({ movieId }: { movieId: string }) {
         )}
       </div>
 
+      {/* Write / Edit form */}
       {user && (!myReview || isEditMode) && (
-        <ReviewComposeInner
-          key={`${myReview?.id ?? 'new'}-${isEditMode}`}
-          movieId={movieId}
-          myReview={myReview}
-          isEditMode={isEditMode}
-          onCancelEdit={() => setIsEditMode(false)}
-        />
+        <div className="mb-8 p-5 rounded-xl border border-border bg-card space-y-4">
+          <p className="text-sm font-semibold">
+            {isEditMode ? 'Edit your review' : 'Write a review'}
+          </p>
+          <StarRating value={rating} onChange={setRating} />
+          <Textarea
+            placeholder="What did you think of this movie?"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            rows={3}
+            className="resize-none bg-background"
+          />
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={handleSubmit}
+              disabled={!rating || !comment.trim() || isPosting || isEditing}
+              className="bg-brand hover:bg-brand/90 text-white"
+            >
+              {!rating
+                ? 'Select a rating first'
+                : isPosting || isEditing
+                  ? 'Saving...'
+                  : isEditMode
+                    ? 'Save changes'
+                    : 'Submit review'}
+            </Button>
+            {isEditMode && (
+              <Button size="sm" variant="ghost" onClick={() => setIsEditMode(false)}>
+                Cancel
+              </Button>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Review list */}
@@ -196,7 +181,7 @@ export function ReviewSection({ movieId }: { movieId: string }) {
               <div
                 key={r.id}
                 className={`p-5 rounded-xl border bg-card transition-colors ${isOwn ? 'border-brand/30' : 'border-border'
-                }`}
+                  }`}
 
               >
 
@@ -212,17 +197,17 @@ export function ReviewSection({ movieId }: { movieId: string }) {
                       <div className="flex items-center gap-2">
                         <Link
                           to={isOwn ? `/user/me` : `/user/${r.userId}`}
-                          className="text-sm font-semibold hover:text-brand transition-colors"
+                          className='text-sm font-semibold hover:text-brand transition-colors'
                         >
                           {r.user?.username ?? 'Unknown'}
                         </Link>
-                        {r.sentiment && (
-                          <EmotionBadge
-                            sentiment={r.sentiment}
-                            score={r.sentimentScore}
-                            className="ml-2"
-                          />
-                        )}
+                        {r.sentiment && <EmotionBadge sentiment={r.sentiment} score={r.sentimentScore} className='ml-2' />}
+                        {/* <span className="text-sm font-semibold">{r.user?.username ?? 'Unknown'}</span> */}
+                        {/* {isOwn && (
+                          <span className="text-xs bg-brand/10 text-brand px-1.5 py-0.5 rounded-full font-medium">
+                            You
+                          </span>
+                        )} */}
                       </div>
                       <span className="text-xs text-muted-foreground shrink-0">
                         {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
@@ -236,7 +221,7 @@ export function ReviewSection({ movieId }: { movieId: string }) {
                           size="sm"
                           variant="ghost"
                           className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                          onClick={() => setIsEditMode(true)}
+                          onClick={() => { setRating(r.rating); setComment(r.comment ?? ''); setIsEditMode(true) }}
                         >
                           <Pencil className="size-3 mr-1" /> Edit
                         </Button>

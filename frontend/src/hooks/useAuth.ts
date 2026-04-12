@@ -25,11 +25,7 @@ export function useLogin() {
         toast.success('Welcome back !')
       }
     },
-    onError: (error) => {
-      // console.log('Login failed: Incorrect credentials')
-      // toast.error('Incorrect email or password')
-      toast.error(getApiErrorMessage(error))
-    },
+    onError: (error) => toast.error(getApiErrorMessage(error)),
   })
 }
 
@@ -38,17 +34,14 @@ export function useLogin() {
  */
 export function useRegister() {
   const navigate = useNavigate()
-  const { clearAuth } = useAuthStore()
+  const { setAuth } = useAuthStore()
 
   return useMutation({
     mutationFn: authApi.register,
     onSuccess: (data) => {
-      clearAuth()
-      navigate('/login', {
-        replace: true,
-        state: { registered: true, username: data.username },
-      })
-      toast.success('Account created. Sign in with your email and password.')
+      setAuth(data.user)
+      navigate('/login')
+      toast.success('Account created successfuly! Welcome to moviesearchDb')
     },
     onError: (error) => toast.error(getApiErrorMessage(error)),
   })

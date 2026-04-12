@@ -12,15 +12,15 @@ export const twofaApi = {
    * @returns A promise resolving to the 2FA setup details (QR code, secret, backup codes).
    */
   setup: async (): Promise<TwoFaSetupResponse> => {
-    const res = await apiClient.get<Record<string, unknown>>('/2fa/setup')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = await apiClient.get<any>('/2fa/setup')
     const payload = res.data
 
-    const qr_code_url = String(payload.qr_code_url ?? payload.qrcode ?? payload.qr ?? '')
-    const secret = String(payload.secret ?? payload.key ?? '')
-    const bc = payload.backup_codes
-    const backup_codes = Array.isArray(bc) ? (bc as string[]) : undefined
+    // Normalize possible backend shapes definitively
+    const qr_code_url: string = payload.qr_code_url ?? payload.qrcode ?? payload.qr ?? ''
+    const secret: string = payload.secret ?? payload.key ?? ''
 
-    return { qr_code_url, secret, backup_codes }
+    return { qr_code_url, secret, backup_codes: payload.backup_codes }
   },
 
   /**
@@ -45,10 +45,11 @@ export const twofaApi = {
   },
 
   /**
-   * Disables 2FA on the currently logged-in account (requires a valid TOTP code).
+   * Disables 2FA on the currently logged-in account.
+   * @returns A promise confirming successful deactivation.
    */
-  disable: async (code: string): Promise<{ message: string }> => {
-    const res = await apiClient.post<{ message: string }>('/2fa/disable', { token: code })
+  disable: async (): Promise<{ message: string }> => {
+    const res = await apiClient.delete<{ message: string }>('/2fa/disable')
     return res.data
-  },
+  }
 }

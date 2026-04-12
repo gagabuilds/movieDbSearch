@@ -9,7 +9,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 
 /**
  * LAZY LOADED PAGES
- * Split into chunks to reduce the initial bundle size.
+ * Split into chunks to reduce the initial bundle size. 
  */
 const LoginPage = lazy(() => import('@/pages/LoginPage').then(m => ({ default: m.LoginPage })))
 const RegisterPage = lazy(() => import('@/pages/RegisterPage').then(m => ({ default: m.RegisterPage })))
@@ -21,8 +21,6 @@ const HomePage = lazy(() => import('@/pages/HomePage').then(m => ({ default: m.H
 const SettingsPage = lazy(() => import('@/pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const UserPage = lazy(() => import('@/pages/UserPage').then(m => ({ default: m.UserPage })))
 const FriendsPage = lazy(() => import('@/pages/FriendsPage').then(m => ({ default: m.FriendsPage })))
-const WishlistPage = lazy(() => import('@/pages/WishlistPage').then(m => ({ default: m.WishlistPage })))
-const WatchedListPage = lazy(() => import('@/pages/WatchedListPage').then(m => ({ default: m.WatchedListPage })))
 const MyProfilePage = lazy(() => import('@/pages/MyProfilePage').then(m => ({ default: m.MyProfilePage })))
 const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })))
 const CookiePolicyPage = lazy(() => import('@/pages/CookiePolicyPage').then(m => ({ default: m.CookiePolicyPage })))
@@ -31,7 +29,7 @@ const ChatPage = lazy(() => import('@/pages/ChatPage').then(m => ({ default: m.C
 
 /**
  * UTILITY COMPONENTS
- */
+*/
 
 // Simple redirect to home
 function RootRedirect() {
@@ -48,7 +46,7 @@ function PageFallback() {
   )
 }
 
-export function App() {
+function App() {
   return (
     <BrowserRouter>
       {/* ErrorBoundary catches chunk loading failures from React.lazy */}
@@ -65,7 +63,9 @@ export function App() {
               <Route path="/register" element={<RegisterPage />} />
             </Route>
 
-            {/* OAuth callback & 2FA verification (outside main shell) */}
+            {/* AUTH CALLBACKS & 2FA VERIFICATION 
+                Note: 2FA verify usually requires a temporary session token, not a full login 
+            */}
             <Route path="/auth/callback" element={<OAuthCallbackPage />} />
             <Route path="/2fa/verify" element={<TwoFactorVerifyPage />} />
 
@@ -85,12 +85,10 @@ export function App() {
                 <Route path="/friends" element={<FriendsPage />} />
                 <Route path="/2fa/setup" element={<TwoFactorSetupPage />} />
                 <Route path="/menu/rooms" element={<ChatMenuPage />} />
-                <Route path="/wishlist" element={<WishlistPage />} />
-                <Route path="/watched" element={<WatchedListPage />} />
                 <Route path="/rooms/:roomId" element={<ChatPage />} />
               </Route>
-            </Route>
 
+            </Route>
             {/* 404 / CATCH-ALL */}
             <Route path="*" element={<RootRedirect />} />
           </Routes>

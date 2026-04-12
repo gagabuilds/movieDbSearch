@@ -58,7 +58,7 @@ export function useDisable2FA() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (code: string) => twofaApi.disable(code),
+    mutationFn: () => twofaApi.disable(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user', 'me'] })
       toast.success('2FA disabled')

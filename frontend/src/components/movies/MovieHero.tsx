@@ -1,5 +1,4 @@
 import { Badge } from '@/components/ui/badge'
-import { MovieActions } from './MovieActions'
 
 export interface MovieHeroData {
   id: number
@@ -68,10 +67,7 @@ export function MovieHero({ data }: MovieHeroProps) {
           />
 
           <div className="flex-1 pt-15">
-            <div className="flex justify-between items-start mb-2">
-              <h1 className="text-3xl font-bold">{data.title}</h1>
-            </div>
-
+            <h1 className="text-3xl font-bold mb-2">{data.title}</h1>
             {data.tagline && <p className="text-sm italic mb-3">{data.tagline}</p>}
 
             <div className="flex flex-wrap gap-2 mb-4">
@@ -86,7 +82,6 @@ export function MovieHero({ data }: MovieHeroProps) {
               {data.popularity !== undefined && <span>Popularity: {Math.round(data.popularity)}</span>}
               {data.vote_count !== undefined && <span>{data.vote_count.toLocaleString()} votes</span>}
             </div>
-            <MovieActions movieId={data.id} />
           </div>
         </div>
 
