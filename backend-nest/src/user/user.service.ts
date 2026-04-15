@@ -212,6 +212,7 @@ export class UserService {
 
     try {
       await this.emailService.sendExportConfirmation(user.email);
+      console.log("Email sent export ...")
     } catch (error) {
       console.error('Failed to send export confirmation email:', error);
     }

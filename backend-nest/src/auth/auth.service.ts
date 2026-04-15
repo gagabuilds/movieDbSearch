@@ -194,6 +194,7 @@ export class AuthService {
 
         try {
             await this.emailService.sendAccountCreationConfirmation(user.email, user.username);
+            console.log("Email sent, maybe");
         } catch (error) {
             console.error('Failed to send account creation email:', error);
         }

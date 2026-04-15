@@ -26,6 +26,16 @@ export async function loadVaultSecrets() {
       const secrets = response.data.data;
 
       Object.assign(process.env, secrets);
+
+      // Support alternate key names from Vault payloads.
+      process.env.SMTP_HOST = process.env.SMTP_HOST || secrets.SMTP_HOST || secrets.MAIL_HOST;
+      process.env.SMTP_PORT = process.env.SMTP_PORT || secrets.SMTP_PORT || secrets.MAIL_PORT;
+      process.env.SMTP_USER = process.env.SMTP_USER || secrets.SMTP_USER || secrets.MAIL_USER;
+      process.env.SMTP_PASS = process.env.SMTP_PASS || secrets.SMTP_PASS || secrets.SMTP_PASSWORD || secrets.MAIL_PASSWORD;
+
+      if (!process.env.SMTP_PASS) {
+        throw new Error('SMTP_PASS is missing from Vault secrets at secret/data/movies.');
+      }
       
       process.env.DATABASE_URL = `postgresql://${process.env.POSTGRES_USER}:${secrets.POSTGRES_PASSWORD}@postgres:5432/${process.env.POSTGRES_DB}?schema=public`;
       process.env.MONGO_URI = `mongodb://${process.env.MONGO_ROOT_USERNAME}:${secrets.MONGO_ROOT_PASSWORD}@mongodb:27017/${process.env.MONGO_DB_NAME}?authSource=admin`;
